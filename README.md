@@ -1,5 +1,7 @@
 # Warning!
 
+SET your IDF_PATH and PATH on Makefile.
+
 CHANGE the clock prescale in mcpwm.c file to make possible get 30000hz of pwm frequency (15Khz in center aligned mode)
 
 # Results
