@@ -1,0 +1,42 @@
+
+---------------------------------------------------------------------------------------------------------------
+Problema de acesso a Flash na ISR do pwm. Tentei o IRAM nas funções de set duty cycle mas não funcionou. Então copiei o código para dentro do ISR que já é IRAM e funcionou. Porém tirei o portENTER_CRITICAL(&mcpwm_spinlock); pois o spinlock esta fora. 
+---------------------------------------------------------------------------------------------------------------
+The second core is normally enabled. You can disable it using the sdkconfig file, which you would normally 'edit' by running 'make menuconfig'. If you start up a task using the FreeRTOS xTaskCreate function, FreeRTOS will automatically run the task on any of the two CPUs, whichever one is free. You can also 'pin' a task to one single CPU by using xTaskCreatePinnedToCore. All memory* is shared between both CPUs; a you can happily reference a variable and get the same data regardless of where your task runs. In your case, for instance, you can just make a global array, or a global pointer to a malloc()'ed memory region, and you can use that as shared memory. Please do look at the various functions FreeRTOS has to offer for cross-thread interaction (queues, semaphores, muxes): these work in exactly the same way for tasks that run on different cores.
+--------------------------------------------------------------------------------------------------------------
+union {
+        struct {
+            uint32_t timer0_stop_int_ena: 1;           /*Interrupt when timer 0 stops*/
+            uint32_t timer1_stop_int_ena: 1;           /*Interrupt when timer 1 stops*/
+            uint32_t timer2_stop_int_ena: 1;           /*Interrupt when timer 2 stops*/
+            uint32_t timer0_tez_int_ena:  1; bit 3          /*A PWM timer 0 TEZ event will trigger this interrupt*/
+            uint32_t timer1_tez_int_ena:  1; bit 4          /*A PWM timer 1 TEZ event will trigger this interrupt*/
+            uint32_t timer2_tez_int_ena:  1; bit 5          /*A PWM timer 2 TEZ event will trigger this interrupt*/
+            uint32_t timer0_tep_int_ena:  1; bit 6          /*A PWM timer 0 TEP event will trigger this interrupt*/
+            uint32_t timer1_tep_int_ena:  1; bit 7          /*A PWM timer 1 TEP event will trigger this interrupt*/
+            uint32_t timer2_tep_int_ena:  1; bit 8          /*A PWM timer 2 TEP event will trigger this interrupt*/
+            uint32_t fault0_int_ena:      1;           /*Interrupt when event_f0 starts*/
+            uint32_t fault1_int_ena:      1;           /*Interrupt when event_f1 starts*/
+            uint32_t fault2_int_ena:      1;           /*Interrupt when event_f2 starts*/
+            uint32_t fault0_clr_int_ena:  1;           /*Interrupt when event_f0 ends*/
+            uint32_t fault1_clr_int_ena:  1;           /*Interrupt when event_f1 ends*/
+            uint32_t fault2_clr_int_ena:  1;           /*Interrupt when event_f2 ends*/
+            uint32_t cmpr0_tea_int_ena:   1; bit 15           /*A PWM operator 0 TEA event will trigger this interrupt*/
+            uint32_t cmpr1_tea_int_ena:   1; bit 16          /*A PWM operator 1 TEA event will trigger this interrupt*/
+            uint32_t cmpr2_tea_int_ena:   1; bit 17          /*A PWM operator 2 TEA event will trigger this interrupt*/
+            uint32_t cmpr0_teb_int_ena:   1; bit 18          /*A PWM operator 0 TEB event will trigger this interrupt*/
+            uint32_t cmpr1_teb_int_ena:   1; bit 19          /*A PWM operator 1 TEB event will trigger this interrupt*/
+            uint32_t cmpr2_teb_int_ena:   1; bit 20          /*A PWM operator 2 TEB event will trigger this interrupt*/
+            uint32_t tz0_cbc_int_ena:     1;           /*An cycle-by-cycle trip event on PWM0 will trigger this interrupt*/
+            uint32_t tz1_cbc_int_ena:     1;           /*An cycle-by-cycle trip event on PWM1 will trigger this interrupt*/
+            uint32_t tz2_cbc_int_ena:     1;           /*An cycle-by-cycle trip event on PWM2 will trigger this interrupt*/
+            uint32_t tz0_ost_int_ena:     1;           /*An one-shot trip event on PWM0 will trigger this interrupt*/
+            uint32_t tz1_ost_int_ena:     1;           /*An one-shot trip event on PWM1 will trigger this interrupt*/
+            uint32_t tz2_ost_int_ena:     1;           /*An one-shot trip event on PWM2 will trigger this interrupt*/
+            uint32_t cap0_int_ena:        1;           /*A capture on channel 0 will trigger this interrupt*/
+            uint32_t cap1_int_ena:        1;           /*A capture on channel 1 will trigger this interrupt*/
+            uint32_t cap2_int_ena:        1;           /*A capture on channel 2 will trigger this interrupt*/
+            uint32_t reserved30:          2;
+        };
+        uint32_t val;
+    }int_ena;
